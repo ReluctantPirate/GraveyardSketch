@@ -1,4 +1,4 @@
-byte dungeonTier = 0;//ranges from 0 to 15
+byte dungeonTier = 7;//ranges from 0 to 7
 enum gameStates {SETUP, START, PLAY};
 byte gameState = SETUP;
 bool isStarter = false;
@@ -24,8 +24,13 @@ void loop() {
 
   tempDisplay();
 
-  byte sendData = (gameState << 4) + dungeonTier;
+  byte sendData = (gameState << 3) + dungeonTier;
   setValueSentOnAllFaces(sendData);
+
+  buttonSingleClicked();
+  buttonDoubleClicked();
+  buttonMultiClicked();
+  buttonLongPressed();
 }
 
 void setupLoop() {
@@ -57,7 +62,7 @@ void startLoop() {
   if (isStarter) {
     dungeonTier = 0;
   } else {
-    byte lowestNeighborTier = 15;
+    byte lowestNeighborTier = 7;
     //we need to figure out which dungeon tier we are by looking at all of our neighbors
     FOREACH_FACE(f) {
       if (!isValueReceivedOnFaceExpired(f)) {//neighbor!
@@ -70,8 +75,8 @@ void startLoop() {
       }
     }
     dungeonTier = lowestNeighborTier + 1;
-    if (dungeonTier > 15) {
-      dungeonTier = 15;
+    if (dungeonTier > 7) {
+      dungeonTier = 7;
     }
     tierAssigned = true;
   }
@@ -92,7 +97,7 @@ void playLoop() {
   if (buttonMultiClicked()) {
     gameState = SETUP;
     isStarter = false;
-    dungeonTier = 15;
+    dungeonTier = 7;
     tierAssigned = false;
   }
 
@@ -101,7 +106,7 @@ void playLoop() {
       if (getGameState(getLastValueReceivedOnFace(f)) == SETUP) {
         gameState = SETUP;
         isStarter = false;
-        dungeonTier = 15;
+        dungeonTier = 7;
         tierAssigned = false;
       }
     }
@@ -109,11 +114,11 @@ void playLoop() {
 }
 
 byte getDungeonTier(byte data) {
-  return (data & 15);
+  return (data & 7);
 }
 
 byte getGameState(byte data) {
-  return ((data >> 4) & 3);
+  return ((data >> 3) & 3);
 }
 
 void tempDisplay() {
@@ -136,4 +141,16 @@ void tempDisplay() {
       }
       break;
   }
+}
+
+void setupDisplay() {
+
+}
+
+void startDisplay() {
+
+}
+
+void playDisplay() {
+
 }
