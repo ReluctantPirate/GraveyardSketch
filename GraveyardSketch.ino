@@ -4,6 +4,10 @@ byte gameState = SETUP;
 bool isStarter = false;
 bool tierAssigned = false;
 
+bool isRevealed = false;
+enum revealType {PLAIN, TRAP, REWARD};
+byte revealType = PLAIN;
+
 void setup() {
 
 }
@@ -13,16 +17,17 @@ void loop() {
   switch (gameState) {
     case SETUP:
       setupLoop();
+      setupDisplay();
       break;
     case START:
       startLoop();
+      startDisplay();
       break;
     case PLAY:
       playLoop();
+      playDisplay();
       break;
   }
-
-  tempDisplay();
 
   byte sendData = (gameState << 3) + dungeonTier;
   setValueSentOnAllFaces(sendData);
@@ -53,6 +58,8 @@ void setupLoop() {
 }
 
 void startLoop() {
+  isRevealed = false;
+  revealType = PLAIN;
   //transition to PLAY if I'm ready for it
   if (tierAssigned) {
     gameState = PLAY;//play by default
@@ -111,6 +118,22 @@ void playLoop() {
       }
     }
   }
+
+  if (buttonSingleClicked() && dungeonTier != 0) {//reveal!
+    //decide what's behind the fog
+    //are we something special?
+    if (random(7) < dungeonTier) {//this nearly guarantees a special thing on the far ones
+      if (random(1) == 0) {
+        revealType = REWARD;
+      } else {
+        revealType = TRAP;
+      }
+    } else {
+      revealType = PLAIN;
+    }
+
+    isRevealed = true;
+  }
 }
 
 byte getDungeonTier(byte data) {
@@ -144,13 +167,43 @@ void tempDisplay() {
 }
 
 void setupDisplay() {
+  byte spiralOffset = (millis() / 250) % 6;
 
+  FOREACH_FACE(f) {
+    setColorOnFace(dim(WHITE, 50 * f), (f + spiralOffset) % 6);
+  }
 }
 
 void startDisplay() {
-
+  setColor(WHITE);
 }
 
 void playDisplay() {
-
+  if (dungeonTier == 0) {//the staircase
+    FOREACH_FACE(f) {
+      setColorOnFace(dim(BLUE, 50 * f), f);
+    }
+  } else {
+    if (isRevealed) {//actual display
+      switch (revealType) {
+        case PLAIN:
+          setColor(dim(BLUE, 50));
+          setColorOnFace(dim(ORANGE, 50), 0);
+          setColorOnFace(dim(ORANGE, 50), 2);
+          setColorOnFace(dim(ORANGE, 50), 4);
+          break;
+        case TRAP:
+          setColor(RED);
+          setColorOnFace(ORANGE, random(5));
+          break;
+        case REWARD:
+          setColor(YELLOW);
+          setColorOnFace(WHITE, random(5));
+          break;
+      }
+    } else {//fog of war
+      setColor(dim(BLUE, 25));
+      setColorOnFace(dim(ORANGE, 25), random(5));
+    }
+  }
 }
