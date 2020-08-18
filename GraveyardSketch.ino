@@ -1,4 +1,4 @@
-byte dungeonTier = 7;//ranges from 0 to 7
+byte dungeonTier = 5;//ranges from 0 to 7
 enum gameStates {SETUP, START, PLAY};
 byte gameState = SETUP;
 bool isStarter = false;
@@ -82,8 +82,8 @@ void startLoop() {
       }
     }
     dungeonTier = lowestNeighborTier + 1;
-    if (dungeonTier > 7) {
-      dungeonTier = 7;
+    if (dungeonTier > 5) {
+      dungeonTier = 5;
     }
     tierAssigned = true;
   }
@@ -104,7 +104,7 @@ void playLoop() {
   if (buttonMultiClicked()) {
     gameState = SETUP;
     isStarter = false;
-    dungeonTier = 7;
+    dungeonTier = 5;
     tierAssigned = false;
   }
 
@@ -113,7 +113,7 @@ void playLoop() {
       if (getGameState(getLastValueReceivedOnFace(f)) == SETUP) {
         gameState = SETUP;
         isStarter = false;
-        dungeonTier = 7;
+        dungeonTier = 5;
         tierAssigned = false;
       }
     }
@@ -122,15 +122,46 @@ void playLoop() {
   if (buttonSingleClicked() && dungeonTier != 0) {//reveal!
     //decide what's behind the fog
     //are we something special?
-    if (random(7) < dungeonTier) {//this nearly guarantees a special thing on the far ones
-      if (random(1) == 0) {
-        revealType = REWARD;
-      } else {
-        revealType = TRAP;
-      }
-    } else {
-      revealType = PLAIN;
+
+    //so we have a series of probabilities, but we default to red
+    revealType = TRAP;
+    switch (dungeonTier) {
+      case 1:
+        if (random(100) < 75) {
+          revealType = REWARD;
+        }
+        break;
+      case 2:
+        if (random(100) < 60) {
+          revealType = REWARD;
+        }
+        break;
+      case 3:
+        if (random(100) < 50) {
+          revealType = REWARD;
+        }
+        break;
+      case 4:
+        if (random(100) < 40) {
+          revealType = REWARD;
+        }
+        break;
+      case 5:
+        if (random(100) < 30) {
+          revealType = REWARD;
+        }
+        break;
     }
+
+    //    if (random(7) < dungeonTier) {//this nearly guarantees a special thing on the far ones
+    //      if (random(1) == 0) {
+    //        revealType = REWARD;
+    //      } else {
+    //        revealType = TRAP;
+    //      }
+    //    } else {
+    //      revealType = PLAIN;
+    //    }
 
     isRevealed = true;
   }
@@ -159,7 +190,7 @@ void tempDisplay() {
           setColorOnFace(YELLOW, f);
         }
       }
-      if (dungeonTier == 15) {
+      if (dungeonTier == 5) {
         setColor(GREEN);
       }
       break;
@@ -177,6 +208,8 @@ void setupDisplay() {
 void startDisplay() {
   setColor(WHITE);
 }
+
+Color rewardColors[5] = {BLUE, GREEN, ORANGE, YELLOW, WHITE};
 
 void playDisplay() {
   if (dungeonTier == 0) {//the staircase
@@ -197,8 +230,9 @@ void playDisplay() {
           setColorOnFace(ORANGE, random(5));
           break;
         case REWARD:
-          setColor(YELLOW);
-          setColorOnFace(WHITE, random(5));
+          setColor(rewardColors[dungeonTier-1]);
+          setColorOnFace(dim(rewardColors[dungeonTier-1],150), random(5));
+          setColorOnFace(dim(rewardColors[dungeonTier-1],150), random(5));
           break;
       }
     } else {//fog of war
