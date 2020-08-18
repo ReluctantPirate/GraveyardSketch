@@ -119,7 +119,7 @@ void playLoop() {
     }
   }
 
-  if (buttonSingleClicked() && dungeonTier != 0) {//reveal!
+  if (buttonSingleClicked() && dungeonTier != 0 && revealType != TRAP) {//reveal!
     //decide what's behind the fog
     //are we something special?
 
@@ -230,9 +230,9 @@ void playDisplay() {
           setColorOnFace(ORANGE, random(5));
           break;
         case REWARD:
-          setColor(rewardColors[dungeonTier-1]);
-          setColorOnFace(dim(rewardColors[dungeonTier-1],150), random(5));
-          setColorOnFace(dim(rewardColors[dungeonTier-1],150), random(5));
+          setColor(rewardColors[dungeonTier - 1]);
+          setColorOnFace(dim(rewardColors[dungeonTier - 1], 150), random(5));
+          setColorOnFace(dim(rewardColors[dungeonTier - 1], 150), random(5));
           break;
       }
     } else {//fog of war
